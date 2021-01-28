@@ -1,7 +1,6 @@
 {
   "name": "redux-prep",
   "version": "1.0.0",
-  "description": "",
   "main": "src/index.js",
   "private": true,
   "scripts": {
@@ -18,5 +17,19 @@
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vladilenm/redux-course-2020.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vladilenm/redux-course-2020/issues"
+  },
+  "homepage": "https://github.com/vladilenm/redux-course-2020#readme",
+  "description": "",
+  "dependencies": {
+    "redux": "^4.0.5",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.3.0"
   }
 }
