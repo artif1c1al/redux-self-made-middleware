@@ -966,13 +966,19 @@ if ("development" !== 'production' && typeof isCrushed.name === 'string' && isCr
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CHANGE_THEME = exports.DECREMENT = exports.INCREMENT = void 0;
+exports.ENABLE_BUTTONS = exports.DISABLE_BUTTONS = exports.IS_ASYNC_RUNNING = exports.CHANGE_THEME = exports.DECREMENT = exports.INCREMENT = void 0;
 var INCREMENT = "INCREMENT";
 exports.INCREMENT = INCREMENT;
 var DECREMENT = "DECREMENT";
 exports.DECREMENT = DECREMENT;
 var CHANGE_THEME = "CHANGE_THEME";
 exports.CHANGE_THEME = CHANGE_THEME;
+var IS_ASYNC_RUNNING = "IS_ASYNC_RUNNING";
+exports.IS_ASYNC_RUNNING = IS_ASYNC_RUNNING;
+var DISABLE_BUTTONS = "DISABLE_BUTTONS";
+exports.DISABLE_BUTTONS = DISABLE_BUTTONS;
+var ENABLE_BUTTONS = "ENABLE_BUTTONS";
+exports.ENABLE_BUTTONS = ENABLE_BUTTONS;
 },{}],"Redux/rootReducer.js":[function(require,module,exports) {
 "use strict";
 
@@ -999,13 +1005,14 @@ var counterReducer = function counterReducer() {
     state++;
   } else if (action.type === "DECREMENT") {
     state--;
-  } else if (action.type === "INIT") {}
+  } else if (action.type === "INIT_APPLICATION") {}
 
   return state;
 };
 
 var initialThemeState = {
-  value: 'light'
+  value: 'light',
+  disabled: false
 };
 
 var themeReducer = function themeReducer() {
@@ -1018,14 +1025,33 @@ var themeReducer = function themeReducer() {
         value: action.payload
       });
 
+    case _types.ENABLE_BUTTONS:
+      return _objectSpread(_objectSpread({}, state), {}, {
+        disabled: false
+      });
+
+    case _types.DISABLE_BUTTONS:
+      return _objectSpread(_objectSpread({}, state), {}, {
+        disabled: true
+      });
+
     default:
       return state;
   }
-};
+}; // const isAsyncRunningReducer = (state = false, action) => {
+//   if(action.type === RUNNING) {
+//     state = true
+//   } else if (action.type === STOPPED) {
+//     state = false
+//   }
+//   return state
+// }
+
 
 var rootReducer = (0, _redux.combineReducers)({
   counter: counterReducer,
-  theme: themeReducer
+  theme: themeReducer // isAsyncRunning: isAsyncRunningReducer
+
 });
 exports.rootReducer = rootReducer;
 },{"redux":"../node_modules/redux/es/redux.js","./types":"Redux/types.js"}],"Redux/actions.js":[function(require,module,exports) {
@@ -1034,9 +1060,25 @@ exports.rootReducer = rootReducer;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.changeTheme = exports.asyncIncrement = exports.decrement = exports.increment = void 0;
+exports.changeTheme = exports.asyncIncrement = exports.decrement = exports.increment = exports.disableButtons = exports.enableButtons = void 0;
 
 var _types = require("./types");
+
+var enableButtons = function enableButtons() {
+  return {
+    type: _types.ENABLE_BUTTONS
+  };
+};
+
+exports.enableButtons = enableButtons;
+
+var disableButtons = function disableButtons() {
+  return {
+    type: _types.DISABLE_BUTTONS
+  };
+};
+
+exports.disableButtons = disableButtons;
 
 var increment = function increment() {
   return {
@@ -1056,11 +1098,13 @@ exports.decrement = decrement;
 
 var asyncIncrement = function asyncIncrement() {
   return function (dispatch) {
+    dispatch(disableButtons());
     setTimeout(function () {
       dispatch({
         type: _types.INCREMENT
       });
-    }, 1500);
+      dispatch(enableButtons());
+    }, 5500);
   };
 };
 
@@ -1071,7 +1115,13 @@ var changeTheme = function changeTheme(newTheme) {
     type: _types.CHANGE_THEME,
     payload: newTheme
   };
-};
+}; // export const isAsyncRunning = (isRunning) => {
+//   return {
+//     type: IS_ASYNC_RUNNING,
+//     payload: isRunning
+//   }
+// }
+
 
 exports.changeTheme = changeTheme;
 },{"./types":"Redux/types.js"}],"index.js":[function(require,module,exports) {
@@ -1089,6 +1139,8 @@ var _rootReducer = require("./Redux/rootReducer");
 
 var _actions = require("./Redux/actions");
 
+var _types = require("./Redux/types");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var addBtn = document.getElementById('add');
@@ -1096,7 +1148,8 @@ var subBtn = document.getElementById('sub');
 var asyncBtn = document.getElementById('async');
 var themeBtn = document.getElementById('theme');
 var counter = document.getElementById('counter');
-var store = (0, _redux.createStore)(_rootReducer.rootReducer, (0, _redux.applyMiddleware)(_reduxThunk.default, _reduxLogger.default));
+var store = (0, _redux.createStore)(_rootReducer.rootReducer, (0, _redux.compose)((0, _redux.applyMiddleware)(_reduxThunk.default, _reduxLogger.default), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()));
+window.store = store;
 addBtn.addEventListener('click', function () {
   store.dispatch((0, _actions.increment)());
 });
@@ -1104,9 +1157,7 @@ subBtn.addEventListener('click', function () {
   store.dispatch((0, _actions.decrement)());
 });
 asyncBtn.addEventListener('click', function () {
-  setTimeout(function () {
-    store.dispatch((0, _actions.increment)());
-  }, 2000);
+  store.dispatch((0, _actions.asyncIncrement)());
 });
 themeBtn.addEventListener('click', function () {
   var newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
@@ -1116,9 +1167,14 @@ store.subscribe(function () {
   var state = store.getState();
   counter.textContent = state.counter;
   document.body.className = state.theme.value;
+  [addBtn, subBtn, asyncBtn, themeBtn].forEach(function (btn) {
+    btn.disabled = state.theme.disabled;
+  });
 });
-counter.textContent = store.getState().counter;
-},{"./styles.css":"styles.css","redux-thunk":"../node_modules/redux-thunk/es/index.js","redux-logger":"../node_modules/redux-logger/dist/redux-logger.js","redux":"../node_modules/redux/es/redux.js","./Redux/rootReducer":"Redux/rootReducer.js","./Redux/actions":"Redux/actions.js"}],"C:/Users/azhur/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+store.dispatch({
+  type: "INIT_APPLICATION"
+});
+},{"./styles.css":"styles.css","redux-thunk":"../node_modules/redux-thunk/es/index.js","redux-logger":"../node_modules/redux-logger/dist/redux-logger.js","redux":"../node_modules/redux/es/redux.js","./Redux/rootReducer":"Redux/rootReducer.js","./Redux/actions":"Redux/actions.js","./Redux/types":"Redux/types.js"}],"C:/Users/azhur/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

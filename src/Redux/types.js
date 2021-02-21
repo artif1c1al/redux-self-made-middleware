@@ -1,3 +1,9 @@
 export const INCREMENT = "INCREMENT"
 export const DECREMENT = "DECREMENT"
+
 export const CHANGE_THEME = "CHANGE_THEME"
+
+export const IS_ASYNC_RUNNING = "IS_ASYNC_RUNNING"
+
+export const DISABLE_BUTTONS = "DISABLE_BUTTONS"
+export const ENABLE_BUTTONS = "ENABLE_BUTTONS"
