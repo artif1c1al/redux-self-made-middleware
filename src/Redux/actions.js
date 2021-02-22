@@ -1,4 +1,4 @@
-import {CHANGE_THEME, DECREMENT, DISABLE_BUTTONS, ENABLE_BUTTONS, INCREMENT, IS_ASYNC_RUNNING} from "./types";
+import {CHANGE_THEME, DECREMENT, DISABLE_BUTTONS, ENABLE_BUTTONS, INCREMENT} from "./types";
 
 export const enableButtons = () => {
   return {
